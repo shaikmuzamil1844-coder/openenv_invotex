@@ -1,0 +1,170 @@
+spec_version: 1
+name: openenv_invotex
+description: >
+  Multi-domain OpenEnv environment for LLM agent evaluation by Team Invotex.
+  Supports Email Triage, Traffic Control, and Customer Support domains.
+  Switch domains via DOMAIN environment variable — same container, same API.
+  Built for the Meta x PyTorch x HuggingFace OpenEnv Hackathon 2026.
+type: space
+runtime: fastapi
+app: server.app:app
+port: 7860
+
+observation_space:
+  type: object
+  properties:
+    content:
+      type: string
+      description: Text returned by the environment after each action
+    done:
+      type: boolean
+      description: Whether the episode has ended
+    reward:
+      type: number
+      description: Immediate reward for the last action
+    info:
+      type: object
+      properties:
+        task_id:
+          type: string
+          description: Unique identifier for the current task
+        step_count:
+          type: integer
+          description: Number of steps taken in this episode
+        trace_id:
+          type: string
+          description: Unique trace ID for auditing and debugging
+        domain:
+          type: string
+          description: Current domain (email_triage, traffic_control, or customer_support)
+        grader_score:
+          type: number
+          nullable: true
+          description: Final grader score (0.0–1.0), only set on terminal step
+        task_difficulty:
+          type: string
+          description: Difficulty level of current task (easy, medium, hard)
+        step_limit_hit:
+          type: boolean
+          description: True if episode terminated due to step limit
+        error:
+          type: string
+          nullable: true
+          description: Error message if last action failed
+
+action_space:
+  type: object
+  required: [tool_name, tool_args]
+  properties:
+    tool_name:
+      type: string
+      description: Name of the tool to call (must match available tools for domain)
+    tool_args:
+      type: object
+      description: Arguments for the tool, validated against tool schema
+    thought:
+      type: string
+      description: Agent's reasoning (logged but not executed)
+
+tasks:
+  # ── Email Triage ────────────────────────────────────────────────────────────
+  - id: email_easy
+    domain: email_triage
+    difficulty: easy
+    max_steps: 8
+    name: Basic Inbox Triage
+    objective: Correctly label and sort 5 incoming emails (spam, urgent, routine)
+
+  - id: email_medium
+    domain: email_triage
+    difficulty: medium
+    max_steps: 14
+    name: Mixed Inbox with Auto-Reply
+    objective: Triage a mixed inbox and draft appropriate auto-replies for urgent items
+
+  - id: email_hard
+    domain: email_triage
+    difficulty: hard
+    max_steps: 22
+    name: Multi-Thread Escalation with SLA Check
+    objective: Resolve a 3-department email chain, escalate breaches, enforce SLA deadlines
+
+  # ── Traffic Control ─────────────────────────────────────────────────────────
+  - id: traffic_easy
+    domain: traffic_control
+    difficulty: easy
+    max_steps: 8
+    name: Single Intersection Clearance
+    objective: Clear a single-intersection vehicle queue with optimal signal timing
+
+  - id: traffic_medium
+    domain: traffic_control
+    difficulty: medium
+    max_steps: 14
+    name: Emergency Vehicle Priority
+    objective: Manage 4-way intersection while prioritizing an emergency vehicle corridor
+
+  - id: traffic_hard
+    domain: traffic_control
+    difficulty: hard
+    max_steps: 24
+    name: Peak Hour Grid with Multi-Emergency
+    objective: Coordinate multiple intersections during peak hour with 2 emergency vehicles
+
+  # ── Customer Support ────────────────────────────────────────────────────────
+  - id: support_easy
+    domain: customer_support
+    difficulty: easy
+    max_steps: 6
+    name: Billing Inquiry Resolution
+    objective: Resolve a standard billing inquiry using search and policy lookup
+
+  - id: support_medium
+    domain: customer_support
+    difficulty: medium
+    max_steps: 12
+    name: Refund Request with Verification
+    objective: Process a refund request with identity verification and ticket closure
+
+  - id: support_hard
+    domain: customer_support
+    difficulty: hard
+    max_steps: 20
+    name: VIP Dispute with Conflicting Records
+    objective: Resolve a VIP multi-ticket dispute with conflicting billing data and escalation
+
+reward:
+  range: [-0.1, 1.0]
+  shaping: true
+  description: >
+    Per-step rewards for correct tool use and progress milestones.
+    Penalties for invalid tool calls (-0.05 to -0.10) and repeated identical calls.
+    Terminal reward equals grader score (0.0–1.0).
+
+grading:
+  type: rubric_and_code
+  description: >
+    Each domain uses deterministic code graders.
+    Scores are always in range [0.0, 1.0].
+  domains:
+    email_triage:
+      code_criteria:
+        - Correct spam identification (20%)
+        - Urgent email escalation accuracy (20%)
+        - Correct folder routing (20%)
+        - Auto-reply quality for urgent items (20%)
+        - SLA compliance check (20%)
+    traffic_control:
+      code_criteria:
+        - Queue clearance efficiency (20%)
+        - Emergency vehicle corridor time (20%)
+        - Signal phase optimality (20%)
+        - Pedestrian crossing safety (20%)
+        - Overall throughput score (20%)
+    customer_support:
+      code_criteria:
+        - Correct ticket identification (20%)
+        - Identity verification accuracy (20%)
+        - Refund logic correctness (20%)
+        - Ticket closure completeness (20%)
+        - Customer notification delivery (20%)
