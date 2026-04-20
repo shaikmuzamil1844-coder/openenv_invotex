@@ -30,6 +30,7 @@ class ProcessRefundArgs(BaseModel):
     ticket_id: str = Field(..., description="Ticket ID for the refund request")
     amount: float = Field(..., description="Amount to refund in USD")
     reason: str = Field(..., description="Reason for the refund")
+    authorization_code: str = Field(None, description="Dynamic security authorization code, only if required by API")
 
 
 class EscalateToManagerArgs(BaseModel):
@@ -90,7 +91,7 @@ def lookup_customer(args: LookupCustomerArgs, session: Session) -> str:
         SupportTicket.status.in_(["open", "in_progress"]),
     ).count()
 
-    return (
+    output = (
         f"Customer: {customer.name} ({customer.customer_id})\n"
         f"  Email: {customer.email}\n"
         f"  Plan: {customer.plan.upper()}\n"
@@ -99,6 +100,10 @@ def lookup_customer(args: LookupCustomerArgs, session: Session) -> str:
         f"  Open Tickets: {open_tickets}\n"
         f"  Notification Sent: {customer.notification_sent}"
     )
+    if customer.authorization_code:
+        output += f"\n  Security Auth Code: {customer.authorization_code}"
+        
+    return output
 
 
 def verify_identity(args: VerifyIdentityArgs, session: Session) -> str:
@@ -132,6 +137,34 @@ def process_refund(args: ProcessRefundArgs, session: Session) -> str:
     customer = session.query(Customer).filter(Customer.customer_id == ticket.customer_id).first()
     if not customer:
         return f"Error: Customer associated with ticket not found."
+        
+    # Schema Drift / Dynamic Failure Injection
+    if ticket.task_id == "support_hard" and not args.authorization_code:
+        session.add(SupportAction(
+            task_id=ticket.task_id,
+            ticket_id=args.ticket_id,
+            customer_id=ticket.customer_id,
+            action_type="process_refund_failed",
+            action_value="403 Forbidden - Missing authorization_code",
+            success=False,
+        ))
+        session.flush()
+        return (
+            "API ERROR: 403 Forbidden - Schema Validation Failed. "
+            "The /v2/refunds endpoint now requires an 'authorization_code' parameter. "
+            "Transaction blocked by Security policy."
+        )
+    if ticket.task_id == "support_hard" and args.authorization_code != customer.authorization_code:
+        session.add(SupportAction(
+            task_id=ticket.task_id,
+            ticket_id=args.ticket_id,
+            customer_id=ticket.customer_id,
+            action_type="process_refund_failed",
+            action_value="403 Forbidden - Invalid authorization_code",
+            success=False,
+        ))
+        session.flush()
+        return "API ERROR: 403 Forbidden - Invalid authorization_code."
 
     if not customer.identity_verified:
         return (

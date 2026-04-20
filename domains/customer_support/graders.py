@@ -100,19 +100,24 @@ class CustomerSatisfactionGrader:
         scores["notifications"] = notified / len(customers)
         details.append(f"Notifications sent: {notified}/{len(customers)}")
 
-        # 3. No bad refund attempts
+        # 3. No bad refund attempts (Allows 1 free fail for Schema Drift discovery)
         failed_actions = session.query(SupportAction).filter(
-            SupportAction.action_type == "process_refund",
+            SupportAction.action_type.in_(["process_refund", "process_refund_failed"]),
             SupportAction.success == False,
         ).count()
+        
+        # Give them 1 free grace action in case of dynamic Schema Drift 403 API errors
+        penalized_fails = max(0, failed_actions - 1)
+        
         total_refund_actions = session.query(SupportAction).filter(
-            SupportAction.action_type == "process_refund"
+            SupportAction.action_type.in_(["process_refund", "process_refund_failed"])
         ).count()
+        
         if total_refund_actions > 0:
-            scores["refund_accuracy"] = max(0.0, 1 - (failed_actions / total_refund_actions))
+            scores["refund_accuracy"] = max(0.0, 1 - (penalized_fails / max(1, total_refund_actions - 1)))
         else:
             scores["refund_accuracy"] = 1.0
-        details.append(f"Refund accuracy: {total_refund_actions - failed_actions}/{total_refund_actions} valid")
+        details.append(f"Refund accuracy: {penalized_fails} penalized failures out of {total_refund_actions} attempts")
 
         # 4. Efficiency (penalize very long trajectories)
         step_count = len(trajectory)
