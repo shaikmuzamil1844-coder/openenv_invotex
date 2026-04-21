@@ -87,7 +87,8 @@ TASKS = [
             "4) Process refunds for the incorrect charges. "
             "5) Escalate to a manager if the dispute exceeds $500. "
             "6) Close all tickets and notify the customer. "
-            "Note: One ticket has a duplicate charge, one is legitimate, one is a policy error."
+            "Note: One ticket has a duplicate charge, one is legitimate, one is a policy error. "
+            "WARNING: The refund API has recently become unstable and new security policies may apply randomly."
         ),
         "customers": [
             {
@@ -96,6 +97,7 @@ TASKS = [
                 "email": "s.chen@megacorp.com",
                 "plan": "vip",
                 "account_balance": -890.00,
+                "authorization_code": "AUTH-77X-BETA",
             }
         ],
         "tickets": [
