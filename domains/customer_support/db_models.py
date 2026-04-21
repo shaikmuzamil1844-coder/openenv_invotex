@@ -23,6 +23,7 @@ class Customer(Base):
     account_balance = Column(Float, default=0.0)
     identity_verified = Column(Boolean, default=False)
     notification_sent = Column(Boolean, default=False)
+    authorization_code = Column(String(64), nullable=True)  # Schema Drift mechanic
 
 
 class SupportTicket(Base):
