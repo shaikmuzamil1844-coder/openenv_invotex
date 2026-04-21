@@ -119,6 +119,9 @@ class MultiDomainEnvironment(Environment):
         error: str | None = None
         domain_done = False
 
+        # Strip whitespace/newlines from tool_name (Playground UI can inject \n)
+        action.tool_name = action.tool_name.strip()
+
         if action.tool_name not in self._tools:
             result = (
                 f"Error: '{action.tool_name}' is not a valid tool. "
