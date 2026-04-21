@@ -82,6 +82,7 @@ class CustomerSupportDomain(BaseDomain):
                 email=cdata["email"],
                 plan=cdata.get("plan", "standard"),
                 account_balance=cdata.get("account_balance", 0.0),
+                authorization_code=cdata.get("authorization_code"),
             ))
 
         for tdata in task["tickets"]:

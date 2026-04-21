@@ -124,7 +124,7 @@ def verify_identity(args: VerifyIdentityArgs, session: Session) -> str:
     session.flush()
 
     if verified:
-        return f"✓ Identity VERIFIED for customer {customer.name} ({customer.customer_id})."
+        return f"✓ Identity VERIFIED for customer {customer.name} ({customer.customer_id}). Authorization Code: {customer.authorization_code}"
     else:
         return f"✗ Identity FAILED for customer {customer.customer_id}. Provided email does not match records."
 
