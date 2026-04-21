@@ -44,7 +44,7 @@ class ResetRequest(BaseModel):
     task_id: Optional[str] = None
 
 
-domain_name = os.getenv("DOMAIN", "email_triage")
+domain_name = os.getenv("DOMAIN", "email_triage").strip()
 
 # Pre-warm domain tables on startup
 _startup_domain_cls = DomainRegistry.get(domain_name)
