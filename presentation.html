@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OpenEnv Invotex — Hackathon Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #fff; overflow: hidden; }
+  .slide { display: none; width: 100vw; height: 100vh; padding: 60px 80px; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+  .slide.active { display: flex; }
+  .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(236,72,153,0.1) 0%, transparent 50%); pointer-events: none; }
+  .badge { display: inline-block; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.5); border-radius: 20px; padding: 6px 18px; font-size: 13px; color: #a5b4fc; margin-bottom: 20px; width: fit-content; }
+  h1 { font-size: 64px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+  h2 { font-size: 42px; font-weight: 800; margin-bottom: 30px; }
+  h3 { font-size: 22px; font-weight: 600; color: #a5b4fc; margin-bottom: 12px; }
+  p { font-size: 18px; line-height: 1.7; color: #94a3b8; max-width: 800px; }
+  .gradient { background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 30px; }
+  .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 28px; }
+  .card .icon { font-size: 36px; margin-bottom: 14px; }
+  .card h3 { font-size: 18px; color: #e2e8f0; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: #94a3b8; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
+  .step-num { background: linear-gradient(135deg, #6366f1, #ec4899); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .step-text h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .step-text p { font-size: 14px; color: #94a3b8; }
+  .error-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 20px 24px; font-family: monospace; font-size: 14px; color: #fca5a5; margin: 20px 0; }
+  .success-box { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.4); border-radius: 12px; padding: 20px 24px; font-family: monospace; font-size: 14px; color: #86efac; margin: 20px 0; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 56px; font-weight: 900; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat .label { font-size: 14px; color: #64748b; margin-top: 6px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 30px; }
+  .pill { display: inline-block; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; padding: 8px 16px; font-size: 14px; color: #a5b4fc; margin: 4px; }
+  .nav { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 12px; z-index: 100; }
+  .nav button { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; padding: 10px 22px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .nav button:hover { background: rgba(99,102,241,0.4); }
+  .slide-counter { position: fixed; bottom: 38px; left: 40px; font-size: 13px; color: #475569; }
+  .divider { width: 60px; height: 4px; background: linear-gradient(135deg, #6366f1, #ec4899); border-radius: 2px; margin-bottom: 24px; }
+  .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  .table th { background: rgba(99,102,241,0.2); padding: 12px 16px; text-align: left; font-size: 14px; color: #a5b4fc; border: 1px solid rgba(255,255,255,0.08); }
+  .table td { padding: 12px 16px; font-size: 14px; color: #94a3b8; border: 1px solid rgba(255,255,255,0.06); }
+  .table tr:hover td { background: rgba(255,255,255,0.03); }
+  .highlight { color: #6366f1; font-weight: 600; }
+  .tag-green { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; padding: 2px 10px; border-radius: 6px; font-size: 12px; }
+  .tag-red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 2px 10px; border-radius: 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: TITLE -->
+<div class="slide active" id="s1">
+  <div class="badge">🏆 Meta × PyTorch × HuggingFace Hackathon 2026</div>
+  <h1><span class="gradient">OpenEnv Invotex</span></h1>
+  <h1 style="font-size:36px; font-weight:400; color:#94a3b8; margin-top:8px;">A Multi-Domain RL Environment for Enterprise AI</h1>
+  <div class="divider" style="margin-top:30px;"></div>
+  <p>Fine-tuning Llama-3 to survive real-world API chaos using Schema Drift mechanics and multi-domain reinforcement learning.</p>
+  <div style="margin-top:40px; display:flex; gap:16px; flex-wrap:wrap;">
+    <span class="pill">🧠 World Modeling (Theme 3.1)</span>
+    <span class="pill">🦙 Llama-3 8B + Unsloth</span>
+    <span class="pill">🚀 Live on HuggingFace Spaces</span>
+    <span class="pill">👤 Shaik Muzamil</span>
+    <span class="pill">👤 Shaik Baba Azmath</span>
+    <span class="pill">👤 Sanapathi Sai Kumar</span>
+  </div>
+</div>
+
+<!-- SLIDE 2: THE PROBLEM -->
+<div class="slide" id="s2">
+  <div class="badge">The Problem</div>
+  <h2>AI Agents <span class="gradient">Break in Production</span></h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <p style="margin-bottom:20px;">Today's AI agents are trained on static API schemas. But the real world is different — APIs change without warning.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><h4>API Schema Changes</h4><p>A new required field appears silently in the endpoint.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><h4>Agent Gets 403 Error</h4><p>The AI blindly retries the old format and fails repeatedly.</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><h4>Business Impact</h4><p>Refunds fail, customers are angry, revenue is lost.</p></div></div>
+      </div>
+    </div>
+    <div>
+      <h3>Industry Impact</h3>
+      <div class="cards" style="grid-template-columns:1fr;">
+        <div class="card"><div class="icon">🏦</div><h3>Finance</h3><p>Payment API changes cause transaction failures</p></div>
+        <div class="card"><div class="icon">🏥</div><h3>Healthcare</h3><p>Routing system failures delay emergency response</p></div>
+        <div class="card"><div class="icon">🏢</div><h3>Enterprise SaaS</h3><p>Support agents break when ticket APIs update</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: OUR SOLUTION -->
+<div class="slide" id="s3">
+  <div class="badge">Our Solution</div>
+  <h2>Train AI to <span class="gradient">Adapt, Not Fail</span></h2>
+  <div class="divider"></div>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">🌍</div>
+      <h3>Multi-Domain Environment</h3>
+      <p>3 realistic enterprise domains — Email Triage, Traffic Control, Customer Support — with 9 tasks at 3 difficulty levels each.</p>
+    </div>
+    <div class="card">
+      <div class="icon">💥</div>
+      <h3>Schema Drift Mechanic</h3>
+      <p>Dynamic 403 errors inject real API schema changes mid-episode. Standard models fail. Trained models adapt.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🧠</div>
+      <h3>Unsloth Fine-Tuning</h3>
+      <p>Llama-3 8B fine-tuned using SFT on successful environment trajectories. Training loss: 3.8 → 0.14 in 60 steps.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎮</div>
+      <h3>Interactive Playground</h3>
+      <p>Live HuggingFace Space lets anyone test agents in real-time. Judges can interact directly with the environment.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📊</div>
+      <h3>Automated Graders</h3>
+      <p>Deterministic graders score every episode on accuracy and efficiency. Zero LLM-as-judge bias.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🐳</div>
+      <h3>Production Ready</h3>
+      <p>Fully containerized with Docker. Deployed on HuggingFace Spaces. Single environment variable to switch domains.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: ARCHITECTURE -->
+<div class="slide" id="s4">
+  <div class="badge">Technical Architecture</div>
+  <h2>How It <span class="gradient">All Works</span></h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div class="steps">
+      <div class="step"><div class="step-num">🔌</div><div class="step-text"><h4>FastAPI Server</h4><p>WebSocket-based step/reset endpoints. Pydantic validation on every tool call.</p></div></div>
+      <div class="step"><div class="step-num">🗄️</div><div class="step-text"><h4>SQLite + SQLAlchemy</h4><p>Per-episode savepoints. Full rollback isolation. Swap to PostgreSQL with one env variable.</p></div></div>
+      <div class="step"><div class="step-num">🧩</div><div class="step-text"><h4>Domain Registry</h4><p>Plugin system — each domain is an independent module implementing BaseDomain interface.</p></div></div>
+      <div class="step"><div class="step-num">📏</div><div class="step-text"><h4>Grader Pipeline</h4><p>Post-episode evaluation by two graders: Task Completion + Efficiency Score.</p></div></div>
+    </div>
+    <div>
+      <h3>Tech Stack</h3>
+      <div style="margin-top:16px;">
+        <div class="pill">FastAPI</div><div class="pill">SQLAlchemy</div><div class="pill">Pydantic</div>
+        <div class="pill">Unsloth</div><div class="pill">TRL + SFTTrainer</div><div class="pill">HuggingFace Hub</div>
+        <div class="pill">Docker</div><div class="pill">Llama-3 8B</div><div class="pill">Python 3.11</div>
+        <div class="pill">SQLite</div><div class="pill">Google Colab T4</div><div class="pill">uvicorn</div>
+      </div>
+      <div style="margin-top:30px; background: rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:20px;">
+        <h3 style="margin-bottom:10px;">Unified API Interface</h3>
+        <p style="font-size:14px;">Any AI agent connects once. Tool names and JSON args format is identical across ALL domains. Only the available tools change per domain.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: SCHEMA DRIFT DEMO -->
+<div class="slide" id="s5">
+  <div class="badge">⭐ Key Innovation</div>
+  <h2>The <span class="gradient">Schema Drift</span> Demo</h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3 style="margin-bottom:10px;">Step 1: Agent tries refund normally</h3>
+      <div class="error-box">
+        Tool: process_refund<br>
+        Args: {"ticket_id": "TKT-9002", "amount": 390.0}<br><br>
+        ❌ API ERROR: 403 Forbidden — Schema<br>
+        Validation Failed. The /v2/refunds endpoint<br>
+        now requires an 'authorization_code'.
+      </div>
+      <h3 style="margin-bottom:10px;">Step 2: Smart agent pivots and recovers</h3>
+      <div class="success-box">
+        Tool: verify_identity → Gets AUTH-77X-BETA<br><br>
+        Tool: process_refund + authorization_code<br><br>
+        ✅ Refund of $390.00 processed!<br>
+        Reward: +0.15 | Done: progressing...
+      </div>
+    </div>
+    <div>
+      <h3>Why This Matters</h3>
+      <div class="steps" style="margin-top:16px;">
+        <div class="step"><div class="step-num">❌</div><div class="step-text"><h4>Standard Model (Qwen-72B)</h4><p>Retries same call 3x. Gets stuck. Final score: <span style="color:#fca5a5; font-weight:700;">0.00</span></p></div></div>
+        <div class="step"><div class="step-num">✅</div><div class="step-text"><h4>Our Trained Llama-3</h4><p>Detects error, pivots to verify_identity, retries with code. Final score: <span style="color:#86efac; font-weight:700;">0.65+</span></p></div></div>
+      </div>
+      <div style="margin-top:20px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:16px;">
+        <p style="font-size:14px; color:#86efac;">This is World Modeling — the agent detects that its mental model of the API is wrong, updates it in real-time, and recovers.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: DOMAINS -->
+<div class="slide" id="s6">
+  <div class="badge">Environment Design</div>
+  <h2>3 Domains, <span class="gradient">9 Tasks</span></h2>
+  <div class="divider"></div>
+  <table class="table">
+    <tr>
+      <th>Domain</th>
+      <th>Easy Task</th>
+      <th>Medium Task</th>
+      <th>Hard Task</th>
+      <th>Key Feature</th>
+    </tr>
+    <tr>
+      <td>📧 Email Triage</td>
+      <td>Sort 5 emails (spam/urgent/routine)</td>
+      <td>8 emails + auto-reply urgent</td>
+      <td>12 emails + SLA escalation</td>
+      <td>SLA deadline tracking</td>
+    </tr>
+    <tr>
+      <td>🎧 Customer Support</td>
+      <td>Billing inquiry resolution</td>
+      <td>Refund with identity verification</td>
+      <td>VIP dispute + <span class="highlight">Schema Drift 403</span></td>
+      <td><span class="tag-green">Schema Drift</span></td>
+    </tr>
+    <tr>
+      <td>🚦 Traffic Control</td>
+      <td>Optimize 1 intersection</td>
+      <td>Ambulance emergency corridor</td>
+      <td>3 intersections + 2 emergencies</td>
+      <td>Emergency priority routing</td>
+    </tr>
+  </table>
+  <div class="stats-row" style="margin-top:30px;">
+    <div class="stat"><div class="num">3</div><div class="label">Domains</div></div>
+    <div class="stat"><div class="num">9</div><div class="label">Unique Tasks</div></div>
+    <div class="stat"><div class="num">20+</div><div class="label">Tool Functions</div></div>
+    <div class="stat"><div class="num">∞</div><div class="label">Replay Episodes</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 7: TRAINING RESULTS -->
+<div class="slide" id="s7">
+  <div class="badge">Training Pipeline</div>
+  <h2>Llama-3 Learns to <span class="gradient">Adapt</span></h2>
+  <div class="divider"></div>
+  <div class="two-col">
+    <div>
+      <h3>Training Setup</h3>
+      <div class="steps" style="margin-top:16px;">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><h4>Data Generation</h4><p>Synthetic trajectories from all 3 domains at all difficulty levels.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><h4>SFT with Unsloth</h4><p>Llama-3 8B + 4-bit quantization on Google Colab T4 GPU. 60% less VRAM.</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><h4>Loss Dropped</h4><p>Training loss: <strong style="color:#fca5a5;">3.8</strong> → <strong style="color:#86efac;">0.14</strong> in 60 steps.</p></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><h4>Evaluation</h4><p>Deployed back to environment. Hard task score: 0.00 → 0.65+</p></div></div>
+      </div>
+    </div>
+    <div>
+      <h3>Baseline Comparison</h3>
+      <table class="table" style="margin-top:16px;">
+        <tr><th>Model</th><th>Easy</th><th>Medium</th><th>Hard</th></tr>
+        <tr><td>Qwen-72B (Baseline)</td><td><span class="tag-green">0.45</span></td><td><span class="tag-red">0.20</span></td><td><span class="tag-red">0.00</span></td></tr>
+        <tr><td>Our Llama-3 (Trained)</td><td><span class="tag-green">0.72</span></td><td><span class="tag-green">0.58</span></td><td><span class="tag-green">0.65+</span></td></tr>
+      </table>
+      <div style="margin-top:20px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:16px;">
+        <p style="font-size:14px; color:#a5b4fc;">The 0.00 → 0.65 jump on the hard task proves our environment and training pipeline work. Schema Drift is now solvable.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: RESULTS & LIVE DEMO -->
+<div class="slide" id="s8">
+  <div class="badge">Results & Impact</div>
+  <h2>What We <span class="gradient">Achieved</span></h2>
+  <div class="divider"></div>
+  <div class="stats-row">
+    <div class="stat"><div class="num">3</div><div class="label">Live Domains</div></div>
+    <div class="stat"><div class="num">0.14</div><div class="label">Final Training Loss</div></div>
+    <div class="stat"><div class="num">0.56</div><div class="label">Traffic Hard Score</div></div>
+    <div class="stat"><div class="num">100%</div><div class="label">Uptime on HF Spaces</div></div>
+  </div>
+  <div class="cards" style="margin-top:30px;">
+    <div class="card">
+      <div class="icon">🎮</div>
+      <h3>Live Playground</h3>
+      <p>muzamil1844-openenv-invotex.hf.space</p>
+    </div>
+    <div class="card">
+      <div class="icon">💻</div>
+      <h3>Open Source Code</h3>
+      <p>github.com/shaikmuzamil1844-coder/openenv_invotex</p>
+    </div>
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h3>Colab Notebook</h3>
+      <p>scripts/train_unsloth.ipynb — reproducible training</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: FUTURE WORK -->
+<div class="slide" id="s9">
+  <div class="badge">Roadmap</div>
+  <h2>What Comes <span class="gradient">Next</span></h2>
+  <div class="divider"></div>
+  <div class="cards">
+    <div class="card"><div class="icon">🔄</div><h3>RLEF Training</h3><p>Move from SFT to Reinforcement Learning from Environment Feedback (PPO/GRPO) for stronger generalization.</p></div>
+    <div class="card"><div class="icon">🌐</div><h3>More Domains</h3><p>Add Healthcare, Legal, and Finance domains with real-world API schema complexity.</p></div>
+    <div class="card"><div class="icon">📈</div><h3>Dynamic Schema Drift</h3><p>Random schema changes at unpredictable intervals — not just on hard tasks. True production simulation.</p></div>
+    <div class="card"><div class="icon">🏢</div><h3>Enterprise SDK</h3><p>Package the environment as a pip-installable benchmark for companies to certify their AI agents.</p></div>
+    <div class="card"><div class="icon">🤝</div><h3>Multi-Agent</h3><p>Multiple agents collaborating across domains — one handles email while another handles traffic.</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>Safety Layer</h3><p>Add adversarial prompt injection scenarios to test agent safety under malicious inputs.</p></div>
+  </div>
+</div>
+
+<!-- SLIDE 10: THANK YOU -->
+<div class="slide" id="s10">
+  <div style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+    <div class="badge" style="margin:0 auto 30px;">Thank You</div>
+    <h1 style="font-size:72px;"><span class="gradient">OpenEnv Invotex</span></h1>
+    <p style="text-align:center; margin-top:20px; font-size:20px;">Building AI agents that survive the real world.</p>
+    <div style="margin-top:50px; display:flex; gap:40px;">
+      <div class="stat"><div class="num" style="font-size:36px;">🎮</div><div class="label" style="font-size:13px;">Live Playground</div><div style="font-size:12px; color:#6366f1; margin-top:4px;">muzamil1844-openenv-invotex.hf.space</div></div>
+      <div class="stat"><div class="num" style="font-size:36px;">💻</div><div class="label" style="font-size:13px;">GitHub</div><div style="font-size:12px; color:#6366f1; margin-top:4px;">shaikmuzamil1844-coder/openenv_invotex</div></div>
+      <div class="stat">
+        <div class="num" style="font-size:36px;">👥</div>
+        <div class="label" style="font-size:13px;">Team Invotex</div>
+        <div style="font-size:12px; color:#6366f1; margin-top:6px;">Shaik Muzamil</div>
+        <div style="font-size:12px; color:#a5b4fc; margin-top:2px;">Shaik Baba Azmath</div>
+        <div style="font-size:12px; color:#a5b4fc; margin-top:2px;">Sanapathi Sai Kumar</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <button onclick="changeSlide(-1)">← Prev</button>
+  <button onclick="changeSlide(1)">Next →</button>
+</div>
+<div class="slide-counter" id="counter">Slide 1 / 10</div>
+
+<script>
+  let cur = 0;
+  const slides = document.querySelectorAll('.slide');
+  function showSlide(n) {
+    slides[cur].classList.remove('active');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    document.getElementById('counter').textContent = `Slide ${cur+1} / ${slides.length}`;
+  }
+  function changeSlide(dir) { showSlide(cur + dir); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  });
+</script>
+</body>
+</html>
