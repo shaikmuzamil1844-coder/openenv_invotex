@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-server = "server.app:main"
+server = "openenv_invotex.server.app:main"
 
 [project.optional-dependencies]
 dev = [

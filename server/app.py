@@ -26,17 +26,24 @@ except Exception as e:
     ) from e
 
 try:
-    from ..models import EnvAction, EnvObservation
-    from .environment import MultiDomainEnvironment
-    from .domain_registry import DomainRegistry
-    from .utils.db import engine
-    from .utils.metrics import get_metrics_response
+    from openenv_invotex.models import EnvAction, EnvObservation
+    from openenv_invotex.server.environment import MultiDomainEnvironment
+    from openenv_invotex.server.domain_registry import DomainRegistry
+    from openenv_invotex.server.utils.db import engine
+    from openenv_invotex.server.utils.metrics import get_metrics_response
 except ImportError:
-    from models import EnvAction, EnvObservation
-    from server.environment import MultiDomainEnvironment
-    from server.domain_registry import DomainRegistry
-    from server.utils.db import engine
-    from server.utils.metrics import get_metrics_response
+    try:
+        from ..models import EnvAction, EnvObservation
+        from .environment import MultiDomainEnvironment
+        from .domain_registry import DomainRegistry
+        from .utils.db import engine
+        from .utils.metrics import get_metrics_response
+    except ImportError:
+        from models import EnvAction, EnvObservation
+        from server.environment import MultiDomainEnvironment
+        from server.domain_registry import DomainRegistry
+        from server.utils.db import engine
+        from server.utils.metrics import get_metrics_response
 
 
 class ResetRequest(BaseModel):

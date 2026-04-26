@@ -8,24 +8,21 @@ Usage:
 from __future__ import annotations
 
 import os
-import requests
 from typing import Any
 
+try:
+    from openenv_invotex import domains as _domains  # noqa: F401
+    from openenv_invotex.client import MultiDomainEnv
+    from openenv_invotex.models import EnvAction
+    from openenv_invotex.server.domain_registry import DomainRegistry
+except ImportError:
+    import domains as _domains  # noqa: F401
+    from client import MultiDomainEnv
+    from models import EnvAction
+    from server.domain_registry import DomainRegistry
+
+
 BASE_URL = os.getenv("HF_SPACE_URL", "http://localhost:7860")
-
-
-def _post(endpoint: str, payload: dict | None = None) -> dict:
-    url = f"{BASE_URL}{endpoint}"
-    resp = requests.post(url, json=payload or {}, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
-
-
-def _get(endpoint: str) -> dict:
-    url = f"{BASE_URL}{endpoint}"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
 
 
 # ─── Domain-specific baseline strategies ─────────────────────────────────────
@@ -86,38 +83,44 @@ _DEFAULT_TASK_IDS = {
 
 def run_baseline_all(domain: str) -> dict[str, Any]:
     """Run the baseline agent against all tasks and return scores."""
-    task_resp = _get("/tasks")
-    tasks = task_resp.get("tasks", [])
+    domain_cls = DomainRegistry.require(domain)
+    tasks = domain_cls().get_tasks()
     results = []
 
     strategy = _BASELINE_STRATEGIES.get(domain, _email_baseline)
+    env = MultiDomainEnv(base_url=BASE_URL).sync()
 
-    for task in tasks:
-        task_id = task["id"]
-        print(f"\n[Baseline] Running task: {task_id} ({task.get('difficulty', '?')})")
+    try:
+        for task in tasks:
+            task_id = task["id"]
+            print(f"\n[Baseline] Running task: {task_id} ({task.get('difficulty', '?')})")
 
-        obs = _post("/reset", {"task_id": task_id})
-        print(f"  Task: {obs.get('content', '')[:120]}...")
+            reset_result = env.reset(task_id=task_id)
+            obs = reset_result.observation
+            print(f"  Task: {obs.content[:120]}...")
 
-        actions = strategy(task_id)
-        final_obs = obs
-        for action in actions:
-            try:
-                final_obs = _post("/step", {"action": action})
-                print(f"  [{action['tool_name']}] → {str(final_obs.get('content', ''))[:80]}")
-                if final_obs.get("done"):
+            actions = strategy(task_id)
+            final_obs = obs
+            for action in actions:
+                try:
+                    step_result = env.step(EnvAction(**action))
+                    final_obs = step_result.observation
+                    print(f"  [{action['tool_name']}] -> {str(final_obs.content)[:80]}")
+                    if step_result.done:
+                        break
+                except Exception as exc:
+                    print(f"  Error: {exc}")
                     break
-            except Exception as exc:
-                print(f"  Error: {exc}")
-                break
 
-        score = final_obs.get("info", {}).get("grader_score")
-        results.append({
-            "task_id": task_id,
-            "difficulty": task.get("difficulty"),
-            "grader_score": score,
-        })
-        print(f"  Grader score: {score}")
+            score = final_obs.info.get("grader_score") if final_obs.info else None
+            results.append({
+                "task_id": task_id,
+                "difficulty": task.get("difficulty"),
+                "grader_score": score,
+            })
+            print(f"  Grader score: {score}")
+    finally:
+        env.close()
 
     return {"domain": domain, "results": results}
 

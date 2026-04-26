@@ -7,7 +7,7 @@ description: >
   Built for the Meta x PyTorch x HuggingFace OpenEnv Hackathon 2026.
 type: space
 runtime: fastapi
-app: server.app:app
+app: openenv_invotex.server.app:app
 port: 7860
 
 observation_space:

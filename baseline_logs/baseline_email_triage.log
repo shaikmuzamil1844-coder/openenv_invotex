@@ -1,3 +1,0 @@
-ERROR: Set HF_TOKEN (or OPENAI_API_KEY) before running inference.py
-  Example (Windows): set HF_TOKEN=hf_... && python inference.py
-  Example (Linux):   HF_TOKEN=hf_... python inference.py

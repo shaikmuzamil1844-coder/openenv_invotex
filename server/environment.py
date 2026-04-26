@@ -16,9 +16,12 @@ from openenv.core.env_server.types import State
 from pydantic import ValidationError
 
 try:
-    from ..models import EnvAction, EnvObservation
+    from openenv_invotex.models import EnvAction, EnvObservation
 except ImportError:
-    from models import EnvAction, EnvObservation
+    try:
+        from ..models import EnvAction, EnvObservation
+    except ImportError:
+        from models import EnvAction, EnvObservation
 
 from .domain_registry import DomainRegistry
 from .system_prompt_builder import SystemPromptBuilder

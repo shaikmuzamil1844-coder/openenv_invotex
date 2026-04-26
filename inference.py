@@ -44,15 +44,15 @@ if not API_KEY:
 
 # ── Import environment client ─────────────────────────────────────────────────
 try:
-    import domains  # noqa: F401 — registers all domain plugins
-    from client import MultiDomainEnv
-    from models import EnvAction
-    from server.domain_registry import DomainRegistry
-except ImportError:
     from . import domains  # noqa: F401
     from .client import MultiDomainEnv
     from .models import EnvAction
     from .server.domain_registry import DomainRegistry
+except ImportError:
+    import domains  # noqa: F401 — registers all domain plugins
+    from client import MultiDomainEnv
+    from models import EnvAction
+    from server.domain_registry import DomainRegistry
 
 
 # ── Mandatory stdout loggers ──────────────────────────────────────────────────

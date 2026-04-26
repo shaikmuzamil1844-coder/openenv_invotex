@@ -14,9 +14,12 @@ from openenv.core.env_client import EnvClient
 from openenv.core.client_types import StepResult
 
 try:
-    from .models import EnvAction, EnvObservation
+    from openenv_invotex.models import EnvAction, EnvObservation
 except ImportError:
-    from models import EnvAction, EnvObservation
+    try:
+        from .models import EnvAction, EnvObservation
+    except ImportError:
+        from models import EnvAction, EnvObservation
 
 
 class MultiDomainEnv(EnvClient[EnvAction, EnvObservation, dict]):

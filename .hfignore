@@ -3,7 +3,6 @@ __pycache__/
 .venv/
 *.db
 *.sqlite
-tests/
 benchmarks/
 docs/
 *.log
@@ -12,3 +11,9 @@ build/
 htmlcov/
 .coverage
 .pytest_cache/
+.git/
+baseline_logs/
+outputs/
+.cursor/
+
+presentation.html
