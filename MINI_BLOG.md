@@ -51,12 +51,34 @@ We used **Unsloth + HuggingFace TRL** to fine-tune Llama-3 8B against our live e
 🔗 **GitHub:** https://github.com/shaikmuzamil1844-coder/openenv_invotex
 
 ```python
+import asyncio
 from openenv import EnvEnv, EnvAction
 
-with EnvEnv.from_env("muzamil1844/openenv_invotex") as env:
-    obs = await env.reset()
-    result = await env.step(EnvAction(tool_name="fetch_emails", tool_args={"folder": "inbox"}))
-    print(result)
+async def main():
+    # Connect to our live Hugging Face Space Environment
+    with EnvEnv.from_env("muzamil1844/openenv_invotex") as env:
+        
+        # 1. Start the Customer Support 'Schema Drift' episode
+        obs = await env.reset(task_id="support_hard")
+        
+        # 2. Try to process a refund (This triggers the intentional 403 Error!)
+        action1 = EnvAction(
+            tool_name="process_refund", 
+            tool_args={"ticket_id": "T-002", "amount": 50.0, "reason": "broken item"}
+        )
+        result1 = await env.step(action1)
+        print("🚨 API ERROR:", result1.observation.content)
+        
+        # 3. Agent updates its World Model and pivots to get the auth code
+        action2 = EnvAction(
+            tool_name="lookup_customer", 
+            tool_args={"customer_id": "C-002"}
+        )
+        result2 = await env.step(action2)
+        print("✅ RECOVERY SUCCESS:", result2.observation.content)
+
+# Run the simulation
+asyncio.run(main())
 ```
 
 ---
