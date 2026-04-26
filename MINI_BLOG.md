@@ -1,6 +1,6 @@
 # 📝 Mini-Blog: How We Built OpenEnv Invotex
 
-*by Muzamil Shaik, Team Invotex — Meta × PyTorch × HuggingFace OpenEnv Hackathon 2026*
+*by Team Invotex (Muzamil Shaik, Shaik Baba Azmath, Sanapathi Sai Kumar) — Meta × PyTorch × HuggingFace OpenEnv Hackathon 2026*
 
 ### The Problem with Existing RL Environments
 
